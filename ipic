@@ -107,7 +107,7 @@ def construct_html(search_term, results):
     Given a list of results, construct the HTML page.
     """
     link_format = '<a href="{0.img_url}"><img src="{0.thumb_url}" alt="{0.name}" title="{0.name}"></a>'
-    html_links = [link_format.format(result) for result in results]
+    html_links = '\n'.join([link_format.format(result) for result in results])
 
     html_output = (
         '<html>'
@@ -123,6 +123,15 @@ def construct_html(search_term, results):
 
 
 if __name__ == '__main__':
+    import sys
+
+    # This is some special casing to allow the script to be called
+    # by Alfred.  Since Alfred can only pass through a single query
+    # string, and can't break it up, we do it for Alfred.
+    if sys.argv[1] == 'alfred':
+        media_type, search_term = sys.argv[2].split(' ', 1)
+        sys.argv = [sys.argv[0], '--{0}'.format(media_type), search_term]
+
     # Parse the command-line arguments
     search_term, api_params = parse_command_line_args()
 
