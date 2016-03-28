@@ -92,7 +92,7 @@ links = [linkFmt.format(x, y, z.encode('utf8'))
           for x, y, z in zip(turls, burls, names) ]
 html = '''<html>                                                        <head><title>{0} pictures</title></head>
 <body>
-<h1>“{0}” pictures</h1>
+<h1>&ldquo;{0}&rdquo; pictures</h1>
 {1}
 </body>
 </html>'''.format(searchterm, '\n'.join(links))
