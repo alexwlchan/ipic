@@ -9,21 +9,30 @@ Python script for searching and downloading images from the iTunes, App, and Mac
 
 ## Usage ##
 
-    ipic (-i | -m | -a | -f | -t | -b | -n | -h) SEARCHTERM
+```text
+ipic (-i | --ios)       <search_term>
+ipic (-m | --mac)       <search_term>
+ipic (-a | --album)     <search_term>
+ipic (-f | --film)      <search_term>
+ipic (-t | --tv)        <search_term>
+ipic (-b | --book)      <search_term>
+ipic (-n | --narration) <search_term>
+ipic (-h | --help)      <search_term>
+```
 
 Generate and open a web page of thumbnail images and links to larger images
 for items in the iTunes/App/Mac App Stores.
 
 The switches are
 
-* -i: iOS app
-* -m: Mac app
-* -a: album
-* -f: movie (mnemonic: film)
-* -t: TV show
-* -b: book
-* -n: audiobook (mnemonic: narration)
-* -h: show this help message
+* `-i`/`--ios`: iOS app
+* `-m`/`--mac`: Mac app
+* `-a`/`--album`: album
+* `-f`/`--film`: movie (mnemonic: film)
+* `-t`/`--tv`: TV show
+* `-b`/`--book`: book
+* `-n`/`--narration`: audiobook (mnemonic: narration)
+* `-h`/`--help`: show the help message
 
 Only one switch is allowed. The HTML file for the generated web page is
 saved on your Desktop.

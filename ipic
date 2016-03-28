@@ -1,5 +1,28 @@
 #!/usr/bin/env python
 # encoding: utf8
+"""
+iTunes API searcher.
+
+Usage:
+  ipic (-i | --ios)       <search_term>
+  ipic (-m | --mac)       <search_term>
+  ipic (-a | --album)     <search_term>
+  ipic (-f | --film)      <search_term>
+  ipic (-t | --tv)        <search_term>
+  ipic (-b | --book)      <search_term>
+  ipic (-n | --narration) <search_term>
+  ipic (-h | --help)      <search_term>
+
+Options:
+  -h --help         Show this screen
+  -i --ios          iOS app
+  -m --mac          Mac app
+  -a --album        album
+  -f --film         movie (film)
+  -t --tv           TV show
+  -b --book         book
+  -n --narration    audiobook (narration)
+"""
 
 import requests
 import docopt
@@ -10,58 +33,40 @@ import subprocess
 myDir = os.environ['HOME'] + '/Desktop/'    # directory for HTML file
 browser = 'com.apple.Safari'                # browser bundle identifier
 
-usage = '''Usage: ipic (-i | -m | -a | -f | -t | -b | -n | -h) SEARCHTERM
-  
-Generate and open a web page of thumbnail images and links to larger images
-for items in the iTunes/App/Mac App Stores.
-
-Options:
-  -i      iOS app
-  -m      Mac app
-  -a      album
-  -f      movie (film)
-  -t      TV show
-  -b      book
-  -n      audiobook (narration)
-  -h      show this help message
-
-Only one option is allowed. The HTML file for the generated web page is
-saved on your Desktop.'''
-
 # Handle the command line.
-args = docopt.docopt(usage)
-searchterm = args['SEARCHTERM']
-if args['-i']:
+args = docopt.docopt(__doc__)
+searchterm = args['<search_term>']
+if args['--ios']:
   size = 512
   media = 'software'
   entity = 'software'
   name = 'trackName'
-elif args['-m']:
+elif args['--mac']:
   size = 512
   media = 'software'
   entity = 'macSoftware'
   name = 'trackName'
-elif args['-a']:
+elif args['--album']:
   size = 600
   media = 'music'
   entity = 'album'
   name = 'collectionName'
-elif args['-f']:
+elif args['--film']:
   size = 600
   media = 'movie'
   entity = 'movie'
   name = 'trackName'
-elif args['-t']:
+elif args['--tv']:
   size = 600
   media = 'tvShow'
   entity = 'tvSeason'
   name = 'collectionName'
-elif args['-b']:
+elif args['--book']:
   size = 600
   media = 'ebook'
   entity = 'ebook'
   name = 'trackName'
-elif args['-n']:
+elif args['--narration']:
   size = 600
   media = 'audiobook'
   entity = 'audiobook'
