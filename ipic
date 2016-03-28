@@ -24,13 +24,14 @@ Options:
   -n --narration    audiobook (narration)
 """
 
-import requests
-import docopt
 import os
 import subprocess
+import tempfile
+
+import docopt
+import requests
 
 # You may want to change these.
-myDir = os.environ['HOME'] + '/Desktop/'    # directory for HTML file
 browser = 'com.apple.Safari'                # browser bundle identifier
 
 # Handle the command line.
@@ -98,8 +99,8 @@ html = '''<html>                                                        <head><t
 </html>'''.format(searchterm, '\n'.join(links))
 
 # Create an HTML file and open it.
-htmlFile = myDir + searchterm + '.html'
-with open(htmlFile, 'w') as f:
+_, html_file = tempfile.mkstemp(suffix='.html')
+with open(html_file, 'w') as f:
   f.write(html)
 
-subprocess.check_call(['open', '-b', browser, htmlFile])
+subprocess.check_call(['open', '-b', browser, html_file])

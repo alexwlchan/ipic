@@ -34,8 +34,7 @@ The switches are
 * `-n`/`--narration`: audiobook (mnemonic: narration)
 * `-h`/`--help`: show the help message
 
-Only one switch is allowed. The HTML file for the generated web page is
-saved on your Desktop.
+Only one switch is allowed. The HTML for the generated web page is saved to a temporary file.
 
 Because the API usually returns several hits, `ipic` creates and opens a web page of thumbnail images that let you choose the one you want visually. Here's an example:
 
