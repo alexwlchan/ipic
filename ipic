@@ -24,6 +24,7 @@ Options:
   -n --narration    audiobook (narration)
 """
 
+import collections
 import os
 import subprocess
 import tempfile
@@ -31,76 +32,110 @@ import tempfile
 import docopt
 import requests
 
-# You may want to change these.
-browser = 'com.apple.Safari'                # browser bundle identifier
 
-# Handle the command line.
-args = docopt.docopt(__doc__)
-searchterm = args['<search_term>']
-if args['--ios']:
-  size = 512
-  media = 'software'
-  entity = 'software'
-  name = 'trackName'
-elif args['--mac']:
-  size = 512
-  media = 'software'
-  entity = 'macSoftware'
-  name = 'trackName'
-elif args['--album']:
-  size = 600
-  media = 'music'
-  entity = 'album'
-  name = 'collectionName'
-elif args['--film']:
-  size = 600
-  media = 'movie'
-  entity = 'movie'
-  name = 'trackName'
-elif args['--tv']:
-  size = 600
-  media = 'tvShow'
-  entity = 'tvSeason'
-  name = 'collectionName'
-elif args['--book']:
-  size = 600
-  media = 'ebook'
-  entity = 'ebook'
-  name = 'trackName'
-elif args['--narration']:
-  size = 600
-  media = 'audiobook'
-  entity = 'audiobook'
-  name = 'collectionName'
-else:
-  size = 600
-  media = ''
-  entity = ''
-  name = ''
+# URL for the iTunes search API
+API_URL = 'https://itunes.apple.com/search'
 
-# Make the iTunes search call and collect the thumbnail and large image URLs.
-iURL = 'https://itunes.apple.com/search'
-parameters = {'term': searchterm, 'media': media, 'entity': entity}
-r = requests.get(iURL, params=parameters)
-results = r.json()['results']
-turls = [ x['artworkUrl100'] for x in results ]
-burls = [ x.replace('100x100', '{0}x{0}'.format(size)) for x in turls ]
-names = [ x[name] for x in results ]
+# Browser bundle identifier
+BROWSER = 'com.apple.Safari'
 
-# Construct the HTML.
-linkFmt = '<a href="{1}"><img src="{0}" alt="{2}", title="{2}" /></a>'
-links = [linkFmt.format(x, y, z.encode('utf8'))
-          for x, y, z in zip(turls, burls, names) ]
-html = '''<html>                                                        <head><title>{0} pictures</title></head>
-<body>
-<h1>&ldquo;{0}&rdquo; pictures</h1>
-{1}
-</body>
-</html>'''.format(searchterm, '\n'.join(links))
 
-# Create an HTML file and open it.
-_, html_file = tempfile.mkstemp(suffix='.html')
-with open(html_file, 'w') as f:
-  f.write(html)
+def parse_command_line_args(args=None):
+    """
+    Parses the command-line arguments, and returns a tuple with
+    the search term, and some variables for the iTunes API call.
+    """
+    # If no arguments are provided, read them from the command-line.
+    if args is None:
+        args = docopt.docopt(__doc__)
 
-subprocess.check_call(['open', '-b', browser, html_file])
+    # Get the search term we're using.
+    search_term = args['<search_term>']
+
+    # Set up the API parameters for the different types of media.
+    APIParameters = collections.namedtuple('APIParameters',
+        ['size', 'media', 'entity', 'name'])
+
+    if args['--ios']:
+        parms = APIParameters(512, 'software', 'software',    'trackName')
+    elif args['--mac']:
+        parms = APIParameters(512, 'software', 'macSoftware', 'trackName')
+    elif args['--album']:
+        parms = APIParameters(600, 'music',    'album',       'collectionName')
+    elif args['--film']:
+        parms = APIParameters(600, 'movie',    'movie',       'trackName')
+    elif args['--tv']:
+        parms = APIParameters(600, 'tvShow',   'tvSeason',    'collectionName')
+    elif args['--book']:
+        parms = APIParameters(600, 'ebook',    'ebook',       'trackName')
+    else:
+        parms = APIParameters(600, '',         '',            '')
+
+    return search_term, parms
+
+
+def retrieve_itunes_api_results(search_term, api_params):
+    """
+    Given search terms and API parameters, call the iTunes API.
+    Return a list of (thumb_url, img_url, name) tuples.
+    """
+    # Make the iTunes search call
+    req_params = {
+        'term': search_term,
+        'media': api_params.media,
+        'entity': api_params.entity,
+    }
+    req = requests.get(API_URL, params=req_params)
+
+    # Read the results from the API
+    raw_results = req.json()['results']
+
+    # Clean up the results
+    Result = collections.namedtuple('Result', ['thumb_url', 'img_url', 'name'])
+    results = []
+    for result in raw_results:
+        thumb_url = result['artworkUrl100']
+        img_url = thumb_url.replace('100x100', '{0}x{0}'.format(api_params.size))
+        name = api_params.name
+        results.append(Result(thumb_url, img_url, name.encode('utf8')))
+
+    return results
+
+
+def construct_html(search_term, results):
+    """
+    Given a list of results, construct the HTML page.
+    """
+    link_format = '<a href="{0.img_url}"><img src="{0.thumb_url}" alt="{0.name}" title="{0.name}"></a>'
+    html_links = [link_format.format(result) for result in results]
+
+    html_output = (
+        '<html>'
+        '<head><title>{search_term} pictures</title></head>'
+        '<body>'
+        '<h1>&ldquo;{search_term}&rdquo; pictures</h1>'
+        '{html_links}'
+        '</body>'
+        '</html>'
+    ).format(search_term=search_term, html_links=html_links)
+
+    return html_output
+
+
+if __name__ == '__main__':
+    # Parse the command-line arguments
+    search_term, api_params = parse_command_line_args()
+
+    # Given the API parameters for iTunes and the search term,
+    # call the iTunes API and retrieve the results
+    results = retrieve_itunes_api_results(search_term, api_params)
+
+    # Render those results into an HTML string
+    html_output = construct_html(search_term, results)
+
+    # Write that string to an HTML file, and open it in the browser
+    _, html_file = tempfile.mkstemp(suffix='.html')
+    with open(html_file, 'w') as outfile:
+      outfile.write(html_output)
+
+    subprocess.check_call(['open', '-b', BROWSER, html_file])
