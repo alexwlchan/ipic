@@ -11,6 +11,7 @@ Usage:
   ipic (-t | --tv)        <search_term>
   ipic (-b | --book)      <search_term>
   ipic (-n | --narration) <search_term>
+  ipic                    <search_term>
   ipic (-h | --help)      <search_term>
 
 Options:
