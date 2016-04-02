@@ -132,7 +132,11 @@ if __name__ == '__main__':
     # term of the search string is a filter argument, then use that --
     # otherwise just drop the --alfred flag.
     if sys.argv[1] == '--alfred':
-        media_type, search_term = sys.argv[2].split(' ', 1)
+        try:
+            media_type, search_term = sys.argv[2].split(' ', 1)
+        except ValueError:
+            media_type, search_term = None, sys.argv[2]
+
         if media_type in ('ios', 'mac', 'album', 'film', 'tv', 'book', 'narration'):
             sys.argv = [sys.argv[0], '--{0}'.format(media_type), search_term]
         else:
