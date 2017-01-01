@@ -26,7 +26,6 @@ Options:
 """
 
 import collections
-import os
 import subprocess
 import tempfile
 
@@ -54,8 +53,8 @@ def parse_command_line_args(args=None):
     search_term = args['<search_term>']
 
     # Set up the API parameters for the different types of media.
-    APIParameters = collections.namedtuple('APIParameters',
-        ['size', 'media', 'entity', 'name'])
+    APIParameters = collections.namedtuple(
+        'APIParameters', ['size', 'media', 'entity', 'name'])
 
     if args['--ios']:
         parms = APIParameters(512, 'software', 'software',    'trackName')
@@ -123,7 +122,7 @@ def construct_html(search_term, results):
     return html_output
 
 
-if __name__ == '__main__':
+def main():
     import sys
 
     # This is some special casing to allow the script to be called
@@ -131,7 +130,7 @@ if __name__ == '__main__':
     # string, and can't break it up, we do it for Alfred.  If the first
     # term of the search string is a filter argument, then use that --
     # otherwise just drop the --alfred flag.
-    if sys.argv[1] == '--alfred':
+    if (len(sys.argv) >= 2) and (sys.argv[1] == '--alfred'):
         try:
             media_type, search_term = sys.argv[2].split(' ', 1)
         except ValueError:
@@ -155,6 +154,6 @@ if __name__ == '__main__':
     # Write that string to an HTML file, and open it in the browser
     _, html_file = tempfile.mkstemp(suffix='.html')
     with open(html_file, 'w') as outfile:
-      outfile.write(html_output)
+        outfile.write(html_output)
 
     subprocess.check_call(['open', '-b', BROWSER, html_file])
